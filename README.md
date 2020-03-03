@@ -36,6 +36,3 @@ If you don't have `remotes` installed you should first run
 ```R
 install.packages('remotes')
 ```
-
-
-# spatstat.gui
