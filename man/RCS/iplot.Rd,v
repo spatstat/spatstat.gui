@@ -1,0 +1,409 @@
+head	1.14;
+access;
+symbols;
+locks
+	adrian:1.14; strict;
+comment	@# @;
+
+
+1.14
+date	2020.03.03.07.12.35;	author adrian;	state Exp;
+branches;
+next	1.13;
+
+1.13
+date	2017.06.05.10.46.56;	author adrian;	state Exp;
+branches;
+next	1.12;
+
+1.12
+date	2015.08.23.04.34.59;	author adrian;	state Exp;
+branches;
+next	1.11;
+
+1.11
+date	2015.02.09.07.39.26;	author adrian;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2015.02.09.07.26.23;	author adrian;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2013.10.24.13.31.24;	author adrian;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2013.10.24.13.20.52;	author adrian;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2013.02.11.04.49.56;	author adrian;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2013.02.11.04.41.55;	author adrian;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2010.10.28.01.04.14;	author adrian;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2009.06.30.21.54.56;	author adrian;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2009.06.27.20.05.06;	author adrian;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2009.06.22.23.24.01;	author adrian;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2009.06.21.21.36.56;	author adrian;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.14
+log
+@Summary: moved to separate package
+@
+text
+@\name{iplot} 
+\alias{iplot}
+\alias{iplot.ppp}
+\alias{iplot.layered}
+\alias{iplot.linnet}
+\alias{iplot.lpp}
+\alias{iplot.default}
+\title{Point and Click Interface for Displaying Spatial Data}
+\description{
+  Plot spatial data
+  with interactive (point-and-click) control over the plot.
+}
+\usage{
+ iplot(x, ...)
+
+ \method{iplot}{ppp}(x, ..., xname)
+
+ \method{iplot}{linnet}(x, ..., xname)
+
+ \method{iplot}{lpp}(x, ..., xname)
+
+ \method{iplot}{layered}(x, ..., xname, visible)
+
+ \method{iplot}{default}(x, ..., xname)
+}
+\arguments{
+  \item{x}{
+    The spatial object to be plotted.
+    An object of class \code{"ppp"}, \code{"psp"}, \code{"im"},
+    \code{"owin"}, \code{"linnet"}, \code{"lpp"} or \code{"layered"}.
+  }
+  \item{\dots}{Ignored.}
+  \item{xname}{
+    Optional. Character string to use as the title of the dataset.
+  }
+  \item{visible}{
+    Optional. Logical vector indicating which layers of
+    \code{x} should initially be turned on (visible).
+  }
+}
+\value{
+  \code{NULL}.
+}
+\details{
+  The function \code{iplot} generates a plot of the spatial dataset \code{x}
+  and allows interactive control over the appearance of the plot
+  using a point-and-click interface.
+
+  The function \code{iplot} is generic, with methods for
+  for point patterns (\code{iplot.ppp}),
+  layered objects (\code{iplot.layered})
+  and a default method. The default method will handle objects of
+  class \code{"psp"}, \code{"im"} and \code{"owin"}
+  at least.
+
+  A new popup window is launched. The spatial dataset
+  \code{x} is displayed in the middle of the window using the
+  appropriate \code{plot} method.
+
+  The left side of the window contains
+  buttons and sliders allowing the user to change the plot parameters.
+
+  The right side of the window contains navigation controls for
+  zooming (changing magnification), panning (shifting the
+  field of view relative to the data), redrawing and exiting.
+
+  If the user clicks in the area where the point pattern is displayed,
+  the field of view will be re-centred at the point that was clicked.
+}
+\seealso{
+  \code{\link{istat}}
+}
+\examples{
+   if(interactive()) {
+      iplot(cells)
+      iplot(amacrine)
+      iplot(lansing)
+      L <- layered(D=distmap(cells), P=cells,
+            plotargs=list(list(ribbon=FALSE), list(pch=16)))
+      iplot(L)
+   }
+}
+\author{
+  \spatstatAuthors.
+}
+\keyword{spatial}
+\keyword{hplot}
+@
+
+
+1.13
+log
+@Massive sync with Github after hard crash of red laptop
+@
+text
+@d50 2
+a51 2
+  for point patterns (\code{\link{iplot.ppp}}),
+  layered objects (\code{\link{iplot.layered}})
+a72 3
+\section{Package Dependence}{
+  This function requires the package \pkg{rpanel} to be loaded.
+}
+d74 1
+a74 1
+   if(interactive() && require(rpanel)) {
+d83 2
+a84 5
+\author{\adrian
+  
+  
+  and \rolf
+  
+@
+
+
+1.12
+log
+@safety
+@
+text
+@d1 1
+a1 1
+\name{iplot} %DontDeclareMethods
+d86 5
+a90 5
+\author{Adrian Baddeley
+  \email{Adrian.Baddeley@@uwa.edu.au}
+  \url{http://www.maths.uwa.edu.au/~adrian/}
+  and Rolf Turner
+  \email{r.turner@@auckland.ac.nz}
+@
+
+
+1.11
+log
+@added methods for lpp and linnet
+@
+text
+@d73 3
+d77 1
+a77 1
+   if(interactive()) {
+@
+
+
+1.10
+log
+@new argument 'visible'
+@
+text
+@d5 2
+d18 4
+d30 1
+a30 1
+    \code{"owin"}, or \code{"layered"}.
+@
+
+
+1.9
+log
+@changed my email
+@
+text
+@d16 1
+a16 1
+ \method{iplot}{layered}(x, ..., xname)
+d29 4
+@
+
+
+1.8
+log
+@safety
+@
+text
+@d74 1
+a74 1
+  \email{Adrian.Baddeley@@csiro.au}
+@
+
+
+1.7
+log
+@tweaked
+@
+text
+@d1 1
+a1 1
+\name{iplot}
+d12 1
+a12 1
+ iplot(x, ..., xname)
+@
+
+
+1.6
+log
+@includes all methods.
+@
+text
+@d23 1
+a23 1
+    An object of class \code{"ppp"}, \code{"psp"}, \code{"lpp"}, \code{"im"},
+d35 1
+a35 1
+  The function generates a plot of a spatial dataset
+d42 3
+a44 1
+  and a default method.
+@
+
+
+1.5
+log
+@changed my email address
+@
+text
+@d3 4
+a6 1
+\title{Point and Click Interface for Displaying a Point Pattern}
+d8 1
+a8 1
+  Plot a two-dimensional spatial point pattern
+d12 7
+a18 1
+ iplot(x, xname)
+d22 3
+a24 2
+    The spatial point pattern to be plotted.
+    An object of class \code{"ppp"}.
+d26 1
+d35 2
+a36 3
+  This function generates a plot of a spatial point pattern dataset
+  (object of class \code{"ppp"}) and allows 
+  interactive control over the appearance of the plot
+d39 18
+a56 9
+  A new popup window is launched.
+  The point pattern \code{x} is displayed in the left half of the window
+  using \code{\link{plot.ppp}} with the default values of all
+  the plot parameters. The right side of the window contains
+  buttons and sliders allowing the user to change the header text,
+  the plot symbols, the scale used to represent numeric marks,
+  and so on. For a multitype point pattern, the user
+  can also switch between viewing all points in a single display,
+  and splitting the points into separate patterns according to type.
+d59 1
+a59 3
+  \code{\link{istat}},
+  \code{\link{ppp.object}},
+  \code{\link{plot.ppp}}
+a62 1
+      data(cells)
+d64 5
+@
+
+
+1.4
+log
+@updated
+@
+text
+@d51 1
+a51 1
+  \email{adrian@@maths.uwa.edu.au}
+@
+
+
+1.3
+log
+@new argument xname
+@
+text
+@d6 1
+a6 2
+  and launch an interactive (point-and-click) control panel
+  that controls the plot.
+d29 5
+a33 6
+  First the point pattern \code{x} is plotted on the current display
+  device using \code{\link{plot.ppp}} with the default values of all
+  the plot parameters. Then a popup window is launched, containing
+  a control panel for the plot.
+
+  The control panel allows the user to change the header text,
+d40 1
+d45 1
+a45 1
+   \dontrun{
+@
+
+
+1.2
+log
+@minor
+@
+text
+@d10 1
+a10 1
+ iplot(x)
+d17 3
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d3 1
+a3 1
+\title{Interactive Plot of Point Pattern}
+d6 2
+a7 1
+  and launch an interactive panel that controls the plot
+d24 2
+a25 1
+  interactive control over the appearance of the plot.
+@

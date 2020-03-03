@@ -1,0 +1,282 @@
+head	1.11;
+access;
+symbols;
+locks
+	adrian:1.11; strict;
+comment	@# @;
+
+
+1.11
+date	2020.03.03.07.12.47;	author adrian;	state Exp;
+branches;
+next	1.10;
+
+1.10
+date	2015.08.23.04.34.59;	author adrian;	state Exp;
+branches;
+next	1.9;
+
+1.9
+date	2013.10.24.13.31.24;	author adrian;	state Exp;
+branches;
+next	1.8;
+
+1.8
+date	2010.10.28.01.04.14;	author adrian;	state Exp;
+branches;
+next	1.7;
+
+1.7
+date	2009.06.30.21.57.23;	author adrian;	state Exp;
+branches;
+next	1.6;
+
+1.6
+date	2009.06.30.21.56.29;	author adrian;	state Exp;
+branches;
+next	1.5;
+
+1.5
+date	2009.06.27.20.04.58;	author adrian;	state Exp;
+branches;
+next	1.4;
+
+1.4
+date	2009.06.22.23.23.57;	author adrian;	state Exp;
+branches;
+next	1.3;
+
+1.3
+date	2009.06.22.02.48.42;	author adrian;	state Exp;
+branches;
+next	1.2;
+
+1.2
+date	2009.06.22.02.46.02;	author adrian;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2009.06.22.02.34.06;	author adrian;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.11
+log
+@Summary: moved to separate package
+@
+text
+@\name{istat}
+\alias{istat}
+\title{Point and Click Interface for Exploratory Analysis of Point Pattern}
+\description{
+  Compute various summary functions for a point pattern
+  using a point-and-click interface.
+}
+\usage{
+ istat(x, xname)
+}
+\arguments{
+  \item{x}{
+    The spatial point pattern to be analysed.
+    An object of class \code{"ppp"}.
+  }
+  \item{xname}{
+    Optional. Character string to use as the title of the dataset.
+  }
+}
+\value{
+  \code{NULL}.
+}
+\details{
+  This command launches an interactive (point-and-click) interface 
+  which offers a choice of spatial summary functions
+  that can be applied to the point pattern \code{x}.
+
+  The selected summary function is computed for the point pattern
+  \code{x} and plotted in a popup window.
+
+  The selection of functions includes
+  \code{\link[spatstat]{Kest}}, \code{\link[spatstat]{Lest}},
+  \code{\link[spatstat]{pcf}},
+  \code{\link[spatstat]{Fest}} ,\code{\link[spatstat]{Gest}}
+  and \code{\link[spatstat]{Jest}}.
+  For the function \code{\link[spatstat]{pcf}} it is possible to control
+  the bandwidth parameter \code{bw}.
+  
+  There is also an option to show simulation envelopes of
+  the summary function.
+}
+\section{Note}{
+   Before adjusting the bandwidth parameter \code{bw},
+   it is advisable to select \emph{No simulation envelopes}
+   to save a lot of computation time.
+}
+\seealso{
+  \code{\link{iplot}}
+}
+\examples{
+   if(interactive()) {
+      istat(swedishpines)
+   }
+}
+\author{
+  \spatstatAuthors.
+}
+\keyword{spatial}
+\keyword{hplot}
+@
+
+
+1.10
+log
+@safety
+@
+text
+@d32 5
+a36 3
+  \code{\link{Kest}}, \code{\link{Lest}}, \code{\link{pcf}},
+  \code{\link{Fest}} ,\code{\link{Gest}} and \code{\link{Jest}}.
+  For the function \code{\link{pcf}} it is possible to control
+a46 3
+\section{Package Dependence}{
+  This function requires the package \pkg{rpanel} to be loaded.
+}
+d51 1
+a51 1
+   if(interactive() && require(rpanel)) {
+d55 2
+a56 5
+\author{Adrian Baddeley
+  \email{Adrian.Baddeley@@uwa.edu.au}
+  \url{http://www.maths.uwa.edu.au/~adrian/}
+  and Rolf Turner
+  \email{r.turner@@auckland.ac.nz}
+@
+
+
+1.9
+log
+@changed my email
+@
+text
+@d45 3
+d52 1
+a52 2
+   if(interactive()) {
+      data(swedishpines)
+@
+
+
+1.8
+log
+@changed my email address
+@
+text
+@d55 1
+a55 1
+  \email{Adrian.Baddeley@@csiro.au}
+@
+
+
+1.7
+log
+@minor
+@
+text
+@d55 1
+a55 1
+  \email{adrian@@maths.uwa.edu.au}
+@
+
+
+1.6
+log
+@updated
+@
+text
+@d51 1
+a51 1
+      iplot(swedishpines)
+@
+
+
+1.5
+log
+@new argument xname
+@
+text
+@d3 1
+a3 1
+\title{Point and Click Interface for Statistical Analysis of Point Pattern}
+d29 1
+a29 1
+  \code{x} and plotted on the current display.
+d49 1
+a49 1
+   \dontrun{
+@
+
+
+1.4
+log
+@minor
+@
+text
+@d9 1
+a9 1
+ istat(x)
+d16 3
+@
+
+
+1.3
+log
+@minor
+@
+text
+@d3 1
+a3 1
+\title{Interactive Statistical Analysis of Point Pattern}
+d6 1
+a6 1
+  using an interactive panel
+d21 1
+a21 1
+  This command launches an interactive panel
+d31 5
+a35 3
+
+  There is also an option to show envelopes of
+  the summary functions. 
+d38 3
+a40 2
+  To save time, it is better to select \emph{No simulation envelopes}
+  before adjusting the smoothing parameters.
+@
+
+
+1.2
+log
+@minor
+@
+text
+@d35 4
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d31 1
+d33 1
+a33 1
+  the summary functions.
+@

@@ -1,0 +1,25 @@
+Package: spatstat.gui
+Type: Package
+Title: Interactive Graphics Functions for the 'spatstat' Package
+Version: 1.0-0
+Date: 2020-03-03
+Authors@R: c(person("Adrian", "Baddeley", 
+                    role = c("aut", "cre"),
+       	            email = "Adrian.Baddeley@curtin.edu.au",
+		    comment = c(ORCID="0000-0001-9499-8382")),
+	     person("Rolf", "Turner", 
+                    role = "aut",
+ 	            email="r.turner@auckland.ac.nz",
+		    comment=c(ORCID="0000-0001-5521-5218")),
+	    person("Ege",   "Rubak", 
+                    role = "aut",
+		    email = "rubak@math.aau.dk",
+		    comment=c(ORCID="0000-0002-6675-533X")))
+Maintainer: Adrian Baddeley <Adrian.Baddeley@curtin.edu.au>
+Depends: R (>= 3.3.0), spatstat (>= 1.63-0), rpanel, tcltk, stats, graphics, grDevices, utils, methods
+Imports: spatstat.utils (>= 1.17-0)
+Description: Extension to the 'spatstat' package, containing
+	     interactive graphics capabilities.
+License: GPL (>= 2)
+LazyLoad: yes
+ByteCompile: true

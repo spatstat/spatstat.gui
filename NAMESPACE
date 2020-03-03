@@ -1,0 +1,9 @@
+import(spatstat,spatstat.utils)
+import(rpanel,tcltk,stats,graphics,grDevices,utils,methods)
+
+# Export all names
+exportPattern("^[[:alpha:]]+")
+
+# Methods 
+S3method("iplot", "ppp")
+
