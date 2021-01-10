@@ -1,0 +1,21 @@
+
+        CHANGES IN spatstat.gui VERSION 1.1-1
+
+OVERVIEW
+
+    o spatstat.gui now depends on 'spatstat.geom', 'spatstat.core'
+    and 'spatstat.linnet' rather than 'spatstat'.
+    
+    o added NEWS file.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o package dependence
+    The 'spatstat' package has been divided into a series of sub-packages.
+    This extension package 'spatstat.gui' now depends on the
+    sub-packages 'spatstat.geom', 'spatstat.core', 'spatstat.linnet'
+    instead of 'spatstat'.
+    
+    o NEWS
+    This NEWS file has been added to the package at version 1.1-1.
+

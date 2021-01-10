@@ -1,7 +1,7 @@
 #
 # interactive plot 
 #
-#   $Revision: 1.13 $   $Date: 2017/02/07 07:47:20 $
+#   $Revision: 1.14 $   $Date: 2020/03/13 01:05:27 $
 #
 #
 
@@ -283,9 +283,9 @@ do.iplot.layered <- function(panel) {
   
   # draw it
   opa <- par(ask=FALSE)
+  on.exit(par(opa))
   plot(panel.begin, main=panel$xname)
   plot(scalex, add=TRUE)
-  par(opa)
   panel
 }
 

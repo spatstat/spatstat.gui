@@ -7,4 +7,5 @@ README.md
 \.gcno$
 ^appveyor\.yml$
 .DS_Store
-*~
+~$
+

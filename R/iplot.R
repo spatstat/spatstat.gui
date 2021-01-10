@@ -1,7 +1,7 @@
 #
 # interactive plot for ppp objects using rpanel
 #
-#   $Revision: 1.23 $   $Date: 2017/02/07 07:47:20 $
+#   $Revision: 1.24 $   $Date: 2020/03/13 01:05:20 $
 #
 #
 
@@ -312,8 +312,9 @@ do.iplot.ppp <- function(panel) {
       layered(bb, scalew, plotargs=list(dashargs, list(invert=TRUE)))
     }
 
-  # draw it
-#  opa <- par(ask=FALSE)
+  ## draw it
+  opa <- par(ask=FALSE)
+  on.exit(par(opa))
   if(panel$mtype == "multitype" && panel$split) {
     scalex <- split(scalex, un=(panel$pointmap != "marks"))
     plot(scalex, main=panel$xname, 
@@ -329,7 +330,6 @@ do.iplot.ppp <- function(panel) {
       plot(scalex, add=TRUE, use.marks=use.marks, pch=pch, cex=panel$charsize)
     }
   }
-#  par(opa)
   panel
 }
 

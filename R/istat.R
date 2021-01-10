@@ -1,7 +1,7 @@
 #
 # interactive analysis of point patterns
 #
-#   $Revision: 1.23 $   $Date: 2015/10/21 09:06:57 $
+#   $Revision: 1.25 $   $Date: 2020/03/13 02:17:07 $
 #
 #
 
@@ -150,16 +150,19 @@ do.istat <- function(panel) {
              Gest=envelope(x, Gest, nsim=19, global=TRUE, simulate=simx),
              Jest=envelope(x, Jest, nsim=19, global=TRUE, simulate=simx))
            )
-  # plot it
-  if(stat %in% c("density", "Kinhom", "Linhom")) {
-    plot(out, main=paste(stat, "(", xname, ", sigma)", sep=""))
-    if(stat == "density")
-      points(x)
-  } else if(stat == "pcf")
-    plot(out, main=paste("pcf(", xname, ", bw)", sep=""))
-  else 
-    plot(out, main=paste(stat, "(", xname, ")", sep=""))
-
+  ## determine main title
+  auxargs <- switch(stat,
+                    density = "sigma",
+                    pcf     = "bw",
+                    Kinhom  = "sigma",
+                    Linhom  = "sigma",
+                    NULL)
+  gstring <- paste(c(xname, auxargs), collapse=", ")
+  main <- paste0(stat, paren(gstring))
+  ## plot it
+  try(plot(out, main=main))
+  if(stat == "density")
+    points(x)
   return(panel)
 }
 
