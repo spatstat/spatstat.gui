@@ -1,7 +1,7 @@
 # spatstat.gui
 
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/spatstat.gui)](http://cran.r-project.org/web/packages/spatstat.gui)
-![GitHub R package version](https://img.shields.io/github/r-package/v/spatstat/spatstat.gui)
+[![GitHub R package version](https://img.shields.io/github/r-package/v/spatstat/spatstat.gui)](https://github.com/spatstat/spatstat.gui)
 
 This is an _extension_ of the `spatstat` package. 
 
@@ -30,7 +30,7 @@ from github is through the `remotes` package:
 ```R
 require(remotes)
 install_github('spatstat/spatstat')
-install_github('baddstats/spatstat.gui')
+install_github('spatstat/spatstat.gui')
 ```
 
 If you don't have `remotes` installed you should first run
