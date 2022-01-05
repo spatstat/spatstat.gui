@@ -1,4 +1,30 @@
 
+        CHANGES IN spatstat.gui VERSION 2.0-0.001
+
+OVERVIEW
+
+    o spatstat.gui now depends on 'spatstat.random'.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o package dependence
+    This extension package 'spatstat.gui' now depends on
+    the new package 'spatstat.random'.
+
+        CHANGES IN spatstat.gui VERSION 2.0-0
+
+OVERVIEW
+
+    o spatstat.gui now depends on version 2 of 
+    'spatstat.geom', 'spatstat.core', 'spatstat.linnet' and 'spatstat'.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o package dependence
+    This extension package 'spatstat.gui' now depends on version 2
+    of all the sub-packages 'spatstat.geom', 'spatstat.core', 'spatstat.linnet'
+    and 'spatstat'.
+    
         CHANGES IN spatstat.gui VERSION 1.1-1
 
 OVERVIEW
