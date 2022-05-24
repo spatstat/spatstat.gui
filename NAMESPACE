@@ -1,6 +1,7 @@
 import(stats,graphics,grDevices,utils,methods)
 import(spatstat.utils,spatstat.data)
-import(spatstat.geom,spatstat.random,spatstat.core,spatstat.linnet)
+import(spatstat.geom,spatstat.random)
+import(spatstat.explore,spatstat.model,spatstat.linnet)
 import(spatstat)
 import(rpanel,tcltk)
 
