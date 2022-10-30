@@ -1,4 +1,16 @@
 
+        CHANGES IN spatstat.gui VERSION 3.0-0
+
+OVERVIEW
+
+    o changes to package dependence
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o package dependence
+    This extension package 'spatstat.gui' now depends on
+    version 3 of the spatstat family.
+
         CHANGES IN spatstat.gui VERSION 2.0-1
 
 OVERVIEW
