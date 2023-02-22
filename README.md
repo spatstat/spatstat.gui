@@ -1,6 +1,6 @@
 # spatstat.gui
 
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/spatstat.gui)](http://cran.r-project.org/web/packages/spatstat.gui)
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/spatstat.gui)](http://CRAN.R-project.org/package=spatstat.gui)
 [![GitHub R package version](https://img.shields.io/github/r-package/v/spatstat/spatstat.gui)](https://github.com/spatstat/spatstat.gui)
 
 This is an _extension_ of the `spatstat` package. 
@@ -16,7 +16,7 @@ of `spatstat.gui` on CRAN.
 ## Installing the official release
 
 For the most recent **official release** of 
-`spatstat.gui`, see the [CRAN page](https://cran.r-project.org/web/packages/spatstat.gui). To install it, just type
+`spatstat.gui`, see the [CRAN page](https://CRAN.R-project.org/package=spatstat.gui). To install it, just type
 
 ```R
 install.packages('spatstat.gui')
