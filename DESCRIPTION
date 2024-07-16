@@ -1,8 +1,8 @@
 Package: spatstat.gui
 Type: Package
 Title: Interactive Graphics Functions for the 'spatstat' Package
-Version: 3.0-2
-Date: 2024-07-11
+Version: 3.1-0
+Date: 2024-07-16
 Authors@R: c(person("Adrian", "Baddeley", 
                     role = c("aut", "cre"),
        	            email = "Adrian.Baddeley@curtin.edu.au",
@@ -16,8 +16,8 @@ Authors@R: c(person("Adrian", "Baddeley",
 		    email = "rubak@math.aau.dk",
 		    comment=c(ORCID="0000-0002-6675-533X")))
 Maintainer: Adrian Baddeley <Adrian.Baddeley@curtin.edu.au>
-Depends: R (>= 3.5.0), spatstat.geom (>= 3.0), spatstat.random (>= 3.0-0), spatstat.explore, spatstat.model (>= 3.0), spatstat.linnet (>= 3.0), spatstat.data (>= 3.0), spatstat (>= 3.0), rpanel, tcltk, stats, graphics, grDevices, utils, methods
-Imports: spatstat.utils (>= 3.0)
+Depends: R (>= 3.5.0), spatstat.data (>= 3.1-0), spatstat.univar (>= 3.0-0), spatstat.geom (>= 3.3-0), spatstat.random (>= 3.3-0), spatstat.explore (>= 3.3-0), spatstat.model (>= 3.3-0), spatstat.linnet (>= 3.2-0), spatstat (>= 3.1-1), rpanel, tcltk, stats, graphics, grDevices, utils, methods
+Imports: spatstat.utils (>= 3.0-5)
 Description: Extension to the 'spatstat' package, containing
 	     interactive graphics capabilities.
 License: GPL (>= 2)

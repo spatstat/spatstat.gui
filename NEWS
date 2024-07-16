@@ -1,12 +1,19 @@
 
-        CHANGES IN spatstat.gui VERSION 3.0-2
+        CHANGES IN spatstat.gui VERSION 3.1-0
 
 OVERVIEW
+
+    o changes to package dependence
 
     o minor changes to documentation.
 
     o minor internal improvements.
 
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o package dependence
+    This extension package 'spatstat.gui' now depends on
+    the new package 'spatstat.univar'.
 
         CHANGES IN spatstat.gui VERSION 3.0-1
 
