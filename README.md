@@ -1,6 +1,6 @@
 # spatstat.gui
 
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/spatstat.gui)](http://CRAN.R-project.org/package=spatstat.gui)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/spatstat.gui)](http://CRAN.R-project.org/package=spatstat.gui)
 [![GitHub R package version](https://img.shields.io/github/r-package/v/spatstat/spatstat.gui)](https://github.com/spatstat/spatstat.gui)
 
 This is an _extension_ of the `spatstat` package. 
