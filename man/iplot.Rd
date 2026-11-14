@@ -39,7 +39,9 @@
   }
 }
 \value{
-  \code{NULL}.
+  A Shiny application object of class \code{"shiny.appobj"}.
+  Print the object in an interactive R session to launch it, or pass it
+  to \code{shiny::runApp}. The app can also be embedded in another Shiny UI.
 }
 \details{
   The function \code{iplot} generates a plot of the spatial dataset \code{x}
@@ -53,16 +55,19 @@
   class \code{"psp"}, \code{"im"} and \code{"owin"}
   at least.
 
-  A new popup window is launched. The spatial dataset
+  The application is displayed in a web browser. The spatial dataset
   \code{x} is displayed in the middle of the window using the
   appropriate \code{plot} method.
 
   The left side of the window contains
   buttons and sliders allowing the user to change the plot parameters.
 
-  The right side of the window contains navigation controls for
+  The sidebar also contains navigation controls for
   zooming (changing magnification), panning (shifting the
-  field of view relative to the data), redrawing and exiting.
+  field of view relative to the data), and redrawing.
+  Summary information is displayed below the plot.
+  The Quit button stops the running Shiny application and returns control
+  to R. This ends the application for all connected browser sessions.
 
   If the user clicks in the area where the point pattern is displayed,
   the field of view will be re-centred at the point that was clicked.
@@ -71,14 +76,14 @@
   \code{\link{istat}}
 }
 \examples{
-   if(interactive()) {
-      iplot(cells)
-      iplot(amacrine)
-      iplot(lansing)
+   app <- iplot(cells)
+   if(interactive()) shiny::runApp(app)
+
+   # Other supported objects:
+   multitype_app <- iplot(amacrine)
       L <- layered(D=distmap(cells), P=cells,
             plotargs=list(list(ribbon=FALSE), list(pch=16)))
-      iplot(L)
-   }
+   layered_app <- iplot(L)
 }
 \author{
   \spatstatAuthors.

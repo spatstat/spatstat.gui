@@ -18,15 +18,19 @@
   }
 }
 \value{
-  \code{NULL}.
+  A Shiny application object of class \code{"shiny.appobj"}.
+  Print it interactively or pass it to \code{shiny::runApp} to launch it.
 }
 \details{
-  This command launches an interactive (point-and-click) interface 
+  This command creates a Shiny (point-and-click) interface
   which offers a choice of spatial summary functions
   that can be applied to the point pattern \code{x}.
 
   The selected summary function is computed for the point pattern
-  \code{x} and plotted in a popup window.
+  \code{x} and plotted in a web browser.
+  Summary information is displayed in the browser.
+  The Quit button stops the running Shiny application and returns control
+  to R. This ends the application for all connected browser sessions.
 
   The selection of functions includes
   \code{\link[spatstat.explore]{Kest}}, \code{\link[spatstat.explore]{Lest}},

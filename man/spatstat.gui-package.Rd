@@ -7,7 +7,7 @@
 }
 \description{
   Extension of the spatstat package, containing
-  interactive graphics.
+  interactive graphics through Shiny applications in a web browser.
 }
 \details{
   The main functions are

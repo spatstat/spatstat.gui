@@ -1,249 +1,70 @@
 #
 # interactive plot 
 #
-#   $Revision: 1.14 $   $Date: 2020/03/13 01:05:27 $
-#
-#
 
 iplot.default <- function(x, ..., xname) {
  if(missing(xname))
     xname <- short.deparse(substitute(x))
- x <- as.layered(x)
- iplot(x, ..., xname=xname)
-}
-
-iplot.layered <- local({
-
-  CommitAndRedraw <- function(panel) {
-    ## hack to ensure that panel is immediately updated in rpanel
-    kraever("rpanel")
-    ## This is really a triple-colon!
-    rpanel:::rp.control.put(panel$panelname, panel)
-    ## now redraw it
-    redraw.iplot.layered(panel)
-  }
-  
-  faster.layers <- function(x, visible) {
-    if(any(islinnet <- unlist(lapply(x, inherits, what="linnet")))) {
-      # convert linnet layers to psp, for efficiency
-      x[islinnet] <- lapply(x[islinnet], as.psp)
-    }
-    repeat{
-      islpp <- unlist(lapply(x, inherits, what="lpp"))
-      if(!any(islpp))
-        break
-      # convert an lpp layer to two layers: psp and ppp, for efficiency
-      ii <- min(which(islpp))
-      pl <- layerplotargs(x)
-      n <- length(x)
-      xpre <- if(ii == 1) NULL else x[1:ii]
-      xpost <- if(ii == n) NULL else x[(ii+1L):n]
-      ppre <- if(ii == 1) NULL else pl[1:ii]
-      ppost <- if(ii == n) NULL else pl[(ii+1):n]
-      a <- as.psp(as.linnet(x[[ii]]))
-      b <- as.ppp(x[[ii]])
-      x <- layered(LayerList=c(xpre, list(a, b), xpost),
-                   plotargs=unname(c(ppre, pl[ii], pl[ii], ppost)))
-      visible <- visible[if(ii == 1) c(1, seq_len(n)) else
-                         if(ii == n) c(seq_len(n), n) else
-                         c(1:(ii-1), ii, ii, (ii+1):n)]
-    }
-    attr(x, "visible") <- visible
-    return(x)
+  iplot(as.layered(x), ..., xname=xname)
   }
   
 iplot.layered <- function(x, ..., xname, visible) {
   if(missing(xname))
     xname <- short.deparse(substitute(x))
   verifyclass(x, "layered")
-
-  if(missing(visible) || is.null(visible)) {
+  if(length(x) == 0L)
+    stop("x must contain at least one layer")
+  if(missing(visible) || is.null(visible))
     visible <- rep(TRUE, length(x))
-  } else if(length(visible) == 1) {
-    visible <- rep(visible, length(x))
-  } else stopifnot(length(visible) == length(x))
-
-  kraever("rpanel")
-
-  x <- faster.layers(x, visible)
-  visible <- attr(x, "visible")
-
-  x <- freeze.colourmaps(x)
-  bb <- as.rectangle(as.owin(x))
-  bbmid <- unlist(centroid.owin(bb))
-
-
+  if(!is.logical(visible) || anyNA(visible) ||
+     !(length(visible) %in% c(1L, length(x))))
+    stop("visible must be a logical vector of length 1 or length(x), without NA")
+  visible <- rep(visible, length.out=length(x))
+  prepared <- .sg.prepare.layers(x, visible)
+  x <- .sg.freeze.colourmaps(prepared$x)
+  visible <- prepared$visible
   lnames <- names(x)
-  if(sum(nzchar(lnames)) != length(x))
-    lnames <- paste("Layer", seq_len(length(x)))
-  ##
-  p <- rpanel::rp.control(paste("iplot(", xname, ")", sep=""), 
-                          x=x,
-                          w=as.owin(x),
-                          xname=xname,
-                          layernames=lnames,
-                          bb=bb,
-                          bbmid=bbmid,
-                          zoomfactor=1,
-                          zoomcentre=bbmid,
-                          which = visible,
-                          size=c(700, 400))
-
-# Split panel into three
-# Left: plot controls
-# Middle: data
-# Right: navigation/zoom
-  rpanel::rp.grid(p, "gcontrols", pos=list(row=0,column=0))
-  rpanel::rp.grid(p, "gdisplay",  pos=list(row=0,column=1))
-  rpanel::rp.grid(p, "gnavigate", pos=list(row=0,column=2))
-
-#----- Data display ------------
-
-  # This line is to placate the package checker
-  mytkr <- NULL
-
-  # Create data display panel 
-  rpanel::rp.tkrplot(p, mytkr, plotfun=do.iplot.layered,
-                     action=click.iplot.layered,
-                     pos=list(row=0,column=0,grid="gdisplay"))
-
-  
-#----- Plot controls ------------
-  nextrow <- 0
-  pozzie <- function(n=nextrow, ...)
-    append(list(row=n,column=0,grid="gcontrols"), list(...))
-  
-# main title
-  rpanel::rp.textentry(p, xname, action=redraw.iplot.layered,
-                       title="Plot title",
-                       pos=pozzie(0))
-  nextrow <- 1
-
-# select some layers
-  nx <- length(x)
-  which <- rep.int(TRUE, nx)
-  if(nx > 1) {
-    rpanel::rp.checkbox(p, which, labels=lnames,
-                        action=redraw.iplot.layered,
-                        title="Select layers to plot",
-                        pos=pozzie(nextrow), sticky="")
-    nextrow <- nextrow + 1
+  if(is.null(lnames) || any(!nzchar(lnames)))
+    lnames <- paste("Layer", seq_along(x))
+  ids <- as.character(seq_along(x))
+  controls <- list(shiny::checkboxGroupInput(
+    "layers", "Select layers to plot", choices=setNames(ids, lnames),
+    selected=ids[visible]))
+  panel <- list(x=x, w=as.owin(x), xname=xname)
+  read.controls <- function(input) {
+    # Shiny sends NULL when all checkboxes have been deselected.
+    list(which=ids %in% input$layers)
   }
-  
-# button to print a summary at console
-  rpanel::rp.button(p, title="Print summary information",
-                    pos=pozzie(nextrow),
-                    action=function(panel) {
-                        lapply(lapply(panel$x, summary), print)
-                        return(panel)
-                    })
-#  
-#----- Navigation controls ------------
-  nextrow <- 0
-  navpos <- function(n=nextrow,cc=0, ...)
-    append(list(row=n,column=cc,grid="gnavigate"), list(...))
-
-  rpanel::rp.button(p, title="Up", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        zo <- panel$zoomfactor
-                        ce <- panel$zoomcentre
-                        bb <- panel$bb
-                        height <- sidelengths(bb)[2L]
-                        stepsize <- (height/4)/zo
-                        panel$zoomcentre <- ce + c(0, stepsize)
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Left", pos=navpos(nextrow,0,sticky="w"),
-                    action=function(panel) {
-                        zo <- panel$zoomfactor
-                        ce <- panel$zoomcentre
-                        bb <- panel$bb
-                        width <- sidelengths(bb)[1L]
-                        stepsize <- (width/4)/zo
-                        panel$zoomcentre <- ce - c(stepsize, 0)
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  rpanel::rp.button(p, title="Right", pos=navpos(nextrow,2,sticky="e"),
-                    action=function(panel) {
-                        zo <- panel$zoomfactor
-                        ce <- panel$zoomcentre
-                        bb <- panel$bb
-                        width <- sidelengths(bb)[1L]
-                        stepsize <- (width/4)/zo
-                        panel$zoomcentre <- ce + c(stepsize, 0)
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Down", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        zo <- panel$zoomfactor
-                        ce <- panel$zoomcentre
-                        bb <- panel$bb
-                        height <- sidelengths(bb)[2L]
-                        stepsize <- (height/4)/zo
-                        panel$zoomcentre <- ce - c(0, stepsize)
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-
-  rpanel::rp.button(p, title="Zoom In", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        panel$zoomfactor <- panel$zoomfactor * 2
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Zoom Out", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        panel$zoomfactor <- panel$zoomfactor / 2
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Reset", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        panel$zoomfactor <- 1
-                        panel$zoomcentre <- panel$bbmid
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Redraw", pos=navpos(nextrow,1,sticky=""),
-                    action=redraw.iplot.layered)
-  nextrow <- nextrow+1
-# quit button 
-  rpanel::rp.button(p, title="Quit", quitbutton=TRUE,
-            pos=navpos(nextrow, 1, sticky=""),
-            action= function(panel) { panel })
-
-  invisible(NULL)
+  .sg.plot.app(panel, controls, read.controls, .sg.draw.layered,
+               function() lapply(x, summary))
 }
 
-
-  # Function to redraw the whole shebang
-  redraw.iplot.layered <- function(panel) {
-    rpanel::rp.tkrreplot(panel, mytkr)
-    panel
+.sg.prepare.layers <- function(x, visible) {
+  # Expand each network in place, preserving plot arguments and visibility.
+  layers <- args <- list()
+  shown <- logical(0)
+  nms <- character(0)
+  pl <- layerplotargs(x)
+  nm <- names(x)
+  if(is.null(nm)) nm <- rep("", length(x))
+  for(i in seq_along(x)) {
+    xi <- x[[i]]
+    pieces <- if(inherits(xi, "lpp"))
+      list(as.psp(as.linnet(xi)), as.ppp(xi)) else
+      list(if(inherits(xi, "linnet")) as.psp(xi) else xi)
+    count <- length(pieces)
+    layers <- c(layers, pieces)
+    arg <- if(length(pl) >= i) pl[[i]] else list()
+    args <- c(args, rep(list(arg), count))
+    shown <- c(shown, rep(visible[i], count))
+    nms <- c(nms, if(count == 2L && nzchar(nm[i]))
+             paste(nm[i], c("network", "points")) else rep(nm[i], count))
   }
+  names(layers) <- nms
+  list(x=layered(LayerList=layers, plotargs=unname(args)), visible=shown)
+}
 
-
-# Function executed when data display is clicked
-
-  click.iplot.layered <- function(panel, x, y) {
-    panel$zoomcentre <- panel$zoomcentre +
-      (c(x,y) - panel$bbmid)/panel$zoomfactor
-    CommitAndRedraw(panel)
-    return(panel)
-  }
-
-# function that updates the plot when the control panel is operated
-
-do.iplot.layered <- function(panel) { 
+.sg.draw.layered <- function(panel) {
   # scale and clip the pattern
   x <- panel$x[panel$which]
   w     <- panel$w
@@ -252,9 +73,9 @@ do.iplot.layered <- function(panel) {
   ce    <- panel$zoomcentre
   bb    <- panel$bb
   bbmid <- panel$bbmid
-  scalex <- shift(scalardilate(shift(x, -ce), z), bbmid)
+  scalex <- if(length(x)>0) shift(scalardilate(shift(x, -ce), z), bbmid) else NULL
   scalew <- shift(scalardilate(shift(w, -ce), z), bbmid)
-  scalex <- scalex[, bb]
+  if(length(scalex)>0) scalex <- scalex[, bb]
   scalew <- intersect.owin(scalew, bb, fatal=FALSE)
   # determine what is plotted under the clipped pattern
   blankargs <- list(type="n")
@@ -285,11 +106,11 @@ do.iplot.layered <- function(panel) {
   opa <- par(ask=FALSE)
   on.exit(par(opa))
   plot(panel.begin, main=panel$xname)
-  plot(scalex, add=TRUE)
+  if(length(scalex)>0) plot(scalex, add=TRUE)
   panel
 }
 
-freeze.colourmaps <- function(x) {
+.sg.freeze.colourmaps <- function(x) {
   # tweak a layered object to ensure that
   # the colours of image layers don't change with zoom/pan
   isim <- unlist(lapply(x, is.im))
@@ -309,6 +130,3 @@ freeze.colourmaps <- function(x) {
   }
   return(x) 
 }
-
-iplot.layered
-})

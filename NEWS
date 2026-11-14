@@ -1,3 +1,11 @@
+        CHANGES IN spatstat.gui VERSION 4.0-0
+
+    o Replaced rpanel and Tcl/Tk interfaces with Shiny applications.
+      iplot() and istat() now return shiny.appobj objects, which launch
+      automatically when printed interactively, or through shiny::runApp().
+    o Summary information is displayed in the browser. Quit stops the
+      running Shiny application and returns control to R.
+
 
         CHANGES IN spatstat.gui VERSION 3.1-0
 

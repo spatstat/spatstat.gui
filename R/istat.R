@@ -1,110 +1,63 @@
 #
 # interactive analysis of point patterns
 #
-#   $Revision: 1.25 $   $Date: 2020/03/13 02:17:07 $
-#
-#
 
 istat <- function(x, xname) {
   if(missing(xname))
     xname <- short.deparse(substitute(x))
   verifyclass(x, "ppp")
-  kraever("rpanel")
-  # generate simulations of CSR for use in envelopes
-  simx <- envelope(x, fun=NULL, nsim=39, verbose=FALSE,
+  rect <- as.rectangle(as.owin(x))
+  winwid <- min(diff(rect$xrange), diff(rect$yrange))
+  sigma0 <- winwid/8
+  # Keep a finite slider range even for an empty pattern.
+  pcfbw0 <- 0.15/sqrt(5 * max(1, npoints(x))/area(as.owin(x)))
+  choices <- c("Data"="data", "Kernel smoothed"="density",
+               "K-function"="Kest", "L-function"="Lest",
+               "Pair correlation"="pcf", "Inhomogeneous K"="Kinhom",
+               "Inhomogeneous L"="Linhom", "Empty space function F"="Fest",
+               "Nearest neighbour function G"="Gest", "J-function"="Jest")
+  ui <- shiny::fluidPage(
+    shiny::titlePanel(paste0("istat(", xname, ")")),
+    shiny::sidebarLayout(
+      shiny::sidebarPanel(
+        shiny::radioButtons("stat", "Statistic", choices, selected="data"),
+        shiny::radioButtons("envel", "Simulation envelopes",
+          c("No simulation envelopes"="none", "Pointwise under CSR"="pointwise",
+            "Simultaneous under CSR"="simultaneous"), selected="none"),
+        shiny::conditionalPanel(
+          condition="input.stat === 'density' || input.stat === 'Kinhom' || input.stat === 'Linhom'",
+          shiny::sliderInput("sigma", "Smoothing bandwidth (sigma)",
+                             min=winwid/80, max=winwid/2, value=sigma0)),
+        shiny::conditionalPanel(
+          condition="input.stat === 'pcf'",
+          shiny::sliderInput("pcfbw", "Pair correlation bandwidth (bw)",
+                             min=pcfbw0/10, max=4*pcfbw0, value=pcfbw0)),
+        .sg.summary.controls()),
+      shiny::mainPanel(shiny::plotOutput("plot", height="600px"),
+                       shiny::verbatimTextOutput("summary"))))
+  server <- function(input, output, session) {
+    # A single simulation bank is reused when parameters/statistics change.
+    simulations <- shiny::reactive({
+      envelope(x, fun=NULL, nsim=39, verbose=FALSE,
                    internal=list(csr=TRUE, eject="patterns"))
-  # initial value of smoothing parameter
-  sigma0 <- with(x$window, min(diff(xrange),diff(yrange)))/8
-  # create panel
-  p <- rpanel::rp.control(title=paste("istat(", xname, ")", sep=""),
-                          panelname="istat",
-                          size=c(600,400),
-                          x=x,           # point pattern
-                          xname=xname,   # name of point pattern
-                          simx=simx,   # simulated realisations of CSR
-                          stat="data",
-                          envel="none",
-                          sigma=sigma0)
-# Split panel into two halves  
-# Left half of panel: display
-# Right half of panel: controls
-  rpanel::rp.grid(p, "gdisplay",
-                  pos=list(row=0,column=0), width=400, height=400)
-  rpanel::rp.grid(p, "gcontrols",
-                  pos=list(row=0,column=1), width=200, height=400)
-
-#----- Display side ------------
-
-  # This line is to placate the package checker
-  mytkr2 <- NULL
-  
-  rpanel::rp.tkrplot(p, mytkr2, do.istat,
-                     pos=list(row=0,column=0,grid="gdisplay"))
-
-  redraw <- function(panel) {
-    rpanel::rp.tkrreplot(panel, mytkr2)
-    panel
+    })
+    panel <- shiny::reactive({
+      stat <- .sg.value(input$stat, "data")
+      envel <- .sg.value(input$envel, "none")
+      list(x=x, xname=xname, stat=stat, envel=envel,
+           sigma=.sg.value(input$sigma, sigma0),
+           pcfbw=.sg.value(input$pcfbw, pcfbw0),
+           simx=if(!(stat %in% c("data", "density")) && envel != "none")
+                  simulations() else NULL)
+    })
+    output$plot <- shiny::renderPlot({
+      do.istat(panel())
+      invisible(NULL)
+    }, execOnResize=TRUE)
+    .sg.summary.server(input, output, session, function() summary(x))
   }
-  
-#----- Control side ------------
-  nextrow <- 0
-  pozzie <- function(n=nextrow,s='w')
-    list(row=n,column=0,grid="gcontrols",sticky=s)
-  
-# choice of summary statistic
-  ftable <- c(data="data",
-              density="kernel smoothed",
-              Kest="K-function",
-              Lest="L-function",
-              pcf="pair correlation",
-              Kinhom="inhomogeneous K",
-              Linhom="inhomogeneous L",
-              Fest="empty space function F",
-              Gest="nearest neighbour function G",
-              Jest="J-function")
-  fvals <- names(ftable)
-  flabs <- as.character(ftable)
-  stat <- NULL
-  rpanel::rp.radiogroup(p, stat, vals=fvals, labels=flabs,
-                        title="statistic", action=redraw,
-                        pos=pozzie(0))
-  nextrow <- 1
-# envelopes?
-  envel <- NULL
-  evals <- c("none", "pointwise", "simultaneous")
-  elabs <- c("No simulation envelopes",
-             "Pointwise envelopes under CSR",
-             "Simultaneous envelopes under CSR")
-  rpanel::rp.radiogroup(p, envel, vals=evals, labels=elabs,
-                        title="Simulation envelopes", action=redraw,
-                        pos=pozzie(nextrow))
-  nextrow <- nextrow + 1
-# smoothing parameters
-  sigma <- NULL
-  rect <- as.rectangle(x$window)
-  winwid  <- min(abs(diff(rect$xrange)), abs(diff(rect$yrange)))
-  rpanel::rp.slider(p, sigma, winwid/80, winwid/2, action=redraw, 
-                    title="sigma",
-                    initval=winwid/8, showvalue=TRUE, pos=pozzie(nextrow, ''))
-  nextrow <- nextrow + 1
-  pcfbw <- pcfbwinit <- 0.15/sqrt(5 * x$n/area(x$window))
-  rpanel::rp.slider(p, pcfbw, pcfbwinit/10, 4 * pcfbwinit, action=redraw, 
-                    title="bw", initval=pcfbwinit,
-                    showvalue=TRUE, pos=pozzie(nextrow, ''))
-  nextrow <- nextrow + 1
-# button to print a summary at console
-  rpanel::rp.button(p, title="Print summary information",
-                    action=function(panel) { print(summary(panel$x)); panel},
-                    pos=pozzie(nextrow))
-  nextrow <- nextrow + 1
-# quit button 
-  rpanel::rp.button(p, title="Quit", quitbutton=TRUE,
-                    action= function(panel) { panel }, pos=pozzie(nextrow))
-
-  invisible(NULL)
+  shiny::shinyApp(ui, server)
 }
-
-# function that updates the plot when the control panel is operated
 
 do.istat <- function(panel) { 
   x     <- panel$x
@@ -131,24 +84,24 @@ do.istat <- function(panel) {
              Jest=Jest(x)),
            pointwise=switch(stat,
              density=density(x, sigma=sigma),
-             Kest=envelope(x, Kest, nsim=39, simulate=simx),
-             Lest=envelope(x, Lest, nsim=39, simulate=simx),
-             pcf=envelope(x, pcf, bw=panel$pcfbw, nsim=39, simulate=simx),
-             Kinhom=envelope(x, Kinhom, nsim=39, sigma=sigma, simulate=simx),
-             Linhom=envelope(x, Linhom, nsim=39, sigma=sigma, simulate=simx),
-             Fest=envelope(x, Fest, nsim=39, simulate=simx),
-             Gest=envelope(x, Gest, nsim=39, simulate=simx),
-             Jest=envelope(x, Jest, nsim=39, simulate=simx)),
+             Kest=envelope(x, Kest, nsim=39, simulate=simx, verbose=FALSE),
+             Lest=envelope(x, Lest, nsim=39, simulate=simx, verbose=FALSE),
+             pcf=envelope(x, pcf, bw=panel$pcfbw, nsim=39, simulate=simx, verbose=FALSE),
+             Kinhom=envelope(x, Kinhom, nsim=39, sigma=sigma, simulate=simx, verbose=FALSE),
+             Linhom=envelope(x, Linhom, nsim=39, sigma=sigma, simulate=simx, verbose=FALSE),
+             Fest=envelope(x, Fest, nsim=39, simulate=simx, verbose=FALSE),
+             Gest=envelope(x, Gest, nsim=39, simulate=simx, verbose=FALSE),
+             Jest=envelope(x, Jest, nsim=39, simulate=simx, verbose=FALSE)),
            simultaneous=switch(stat,
              density=density(x, sigma=sigma),
-             Kest=envelope(x, Kest, nsim=19, global=TRUE, simulate=simx),
-             Lest=envelope(x, Lest, nsim=19, global=TRUE, simulate=simx),
-             pcf=envelope(x, pcf, bw=panel$pcfbw, nsim=19, global=TRUE, simulate=simx),
-             Kinhom=envelope(x, Kinhom, nsim=19, sigma=sigma, global=TRUE, simulate=simx),
-             Linhom=envelope(x, Linhom, nsim=19, sigma=sigma, global=TRUE, simulate=simx),
-             Fest=envelope(x, Fest, nsim=19, global=TRUE, simulate=simx),
-             Gest=envelope(x, Gest, nsim=19, global=TRUE, simulate=simx),
-             Jest=envelope(x, Jest, nsim=19, global=TRUE, simulate=simx))
+             Kest=envelope(x, Kest, nsim=19, global=TRUE, simulate=simx, verbose=FALSE),
+             Lest=envelope(x, Lest, nsim=19, global=TRUE, simulate=simx, verbose=FALSE),
+             pcf=envelope(x, pcf, bw=panel$pcfbw, nsim=19, global=TRUE, simulate=simx, verbose=FALSE),
+             Kinhom=envelope(x, Kinhom, nsim=19, sigma=sigma, global=TRUE, simulate=simx, verbose=FALSE),
+             Linhom=envelope(x, Linhom, nsim=19, sigma=sigma, global=TRUE, simulate=simx, verbose=FALSE),
+             Fest=envelope(x, Fest, nsim=19, global=TRUE, simulate=simx, verbose=FALSE),
+             Gest=envelope(x, Gest, nsim=19, global=TRUE, simulate=simx, verbose=FALSE),
+             Jest=envelope(x, Jest, nsim=19, global=TRUE, simulate=simx, verbose=FALSE))
            )
   ## determine main title
   auxargs <- switch(stat,
@@ -160,7 +113,7 @@ do.istat <- function(panel) {
   gstring <- paste(c(xname, auxargs), collapse=", ")
   main <- paste0(stat, paren(gstring))
   ## plot it
-  try(plot(out, main=main))
+  plot(out, main=main)
   if(stat == "density")
     points(x)
   return(panel)

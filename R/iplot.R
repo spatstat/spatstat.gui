@@ -1,261 +1,57 @@
 #
-# interactive plot for ppp objects using rpanel
+# interactive plot for ppp objects using shiny
 #
-#   $Revision: 1.24 $   $Date: 2020/03/13 01:05:20 $
-#
-#
-
-# Effect:
-# when the user types
-#                 iplot(x)
-# a pop-up panel displays a standard plot of x and
-# buttons allowing control of the plot parameters.
-
-# Coding:
-# The panel 'p' contains the following internal variables
-#      x          Original point pattern
-#      w          Window of point pattern
-#      xname      Name of x (for main title)
-#      mtype      Type of marks of x
-#      bb         frame of x 
-#      bbmid      midpoint of frame
-# The following variables in 'p' are controlled by panel buttons etc
-#      split      Logical: whether to split multitype pattern
-#      pointmap   Plot character, or "marks" indicating that marks are used
-#      zoomfactor Zoom factor 
-#      zoomcentre Centre point for zoom
-#      charsize   Character expansion factor cex
-#      markscale  Mark scale factor markscale
-#      
 
 iplot <- function(x, ...) {
   UseMethod("iplot")
 }
 
-iplot.ppp <- local({
-
 iplot.ppp <- function(x, ..., xname) {
   if(missing(xname))
     xname <- short.deparse(substitute(x))
   verifyclass(x, "ppp")
-  
   if(markformat(x) %in% c("hyperframe", "list"))
     marks(x) <- as.data.frame(as.hyperframe(marks(x)))
   if(markformat(x) == "dataframe" && ncol(marks(x)) > 1) {
     warning("Using only the first column of marks")
     marks(x) <- marks(x)[,1L]
   }
-  mtype <- if(is.multitype(x)) "multitype" else if(is.marked(x)) "marked" else "unmarked"
-
-  bb <- as.rectangle(as.owin(x))
-  bbmid <- unlist(centroid.owin(bb))
-  ##
-  kraever("rpanel")
-  ##
-  p <- rpanel::rp.control(paste("iplot(", xname, ")", sep=""), 
-                          x=x,
-                          w=as.owin(x),
-                          xname=xname,
-                          mtype=mtype,
-                          bb=bb,
-                          bbmid=bbmid,
-                          split=FALSE,
-                          pointmap=if(is.marked(x)) "marks" else "o",
-                          zoomfactor=1,
-                          zoomcentre=bbmid,
-                          size=c(700, 400))
-
-# Split panel into three
-# Left: plot controls
-# Middle: data
-# Right: navigation/zoom
-  rpanel::rp.grid(p, "gcontrols", pos=list(row=0,column=0))
-  rpanel::rp.grid(p, "gdisplay",  pos=list(row=0,column=1))
-  rpanel::rp.grid(p, "gnavigate", pos=list(row=0,column=2))
-
-#----- Data display ------------
-
-  # This line is to placate the package checker
-  mytkr <- NULL
-
-  # Create data display panel 
-  rpanel::rp.tkrplot(p, mytkr, plotfun=do.iplot.ppp, action=click.iplot.ppp,
-                     pos=list(row=0,column=0,grid="gdisplay"))
-
-  
-#----- Plot controls ------------
-  nextrow <- 0
-  pozzie <- function(n=nextrow, ...)
-    append(list(row=n,column=0,grid="gcontrols"), list(...))
-  
-# main title
-  rpanel::rp.textentry(p, xname, action=redraw.iplot.ppp, title="Plot title",
-                       pos=pozzie(0))
-  nextrow <- 1
-
-# split ?
-  if(mtype == "multitype") {
-    rpanel::rp.checkbox(p, split, initval=FALSE, 
-                        title="Split according to marks",
-                        action=redraw.iplot.ppp,
-                        pos=pozzie(1))
-    nextrow <- 2
-  }
-
-# plot character or mark style
-  ptvalues <- c("o", "bullet", "plus")
-  ptlabels <- c("open circles", "filled circles", "crosshairs")
-  if(is.marked(x)) {
-    ptvalues <- c("marks", ptvalues)
-    ptlabels <- if(mtype == "multitype")
-      c("Symbols depending on mark", ptlabels)
-    else c("Circles proportional to mark", ptlabels)
-  }
-  pointmap <- ptvalues[1L]
-  rpanel::rp.radiogroup(p, pointmap, vals=ptvalues, labels=ptlabels,
-                        title="how to plot points", action=redraw.iplot.ppp,
-                        pos=pozzie(nextrow))
-  nextrow <- nextrow+1
-
-# plot character size
-  charsize <- 1
-  rpanel::rp.slider(p, charsize, 0, 5, action=redraw.iplot.ppp, 
-                    title="symbol expansion factor (cex)",
-                    initval=1, showvalue=TRUE,
-                    pos=pozzie(nextrow, sticky=""))
-  nextrow <- nextrow+1
-  
-# mark scale
+  mtype <- if(is.multitype(x)) "multitype" else
+           if(is.marked(x)) "marked" else "unmarked"
+  pointmap <- if(is.marked(x)) "marks" else "o"
+  choices <- c("Open circles"="o", "Filled circles"="bullet",
+               "Crosshairs"="plus")
+  if(is.marked(x))
+    choices <- c(setNames("marks", if(mtype == "multitype")
+                         "Symbols depending on mark" else
+                         "Circles proportional to mark"), choices)
+  markscale <- 1
   if(mtype == "marked") {
-    marx <- x$marks
-    marx <- marx[is.finite(marx)]
-    scal <- mark.scale.default(marx, x$window)
-    markscale <- scal
-    rpanel::rp.slider(p, markscale,
-                      from=scal/10, to = 10*scal,
-                      action=redraw.iplot.ppp,
-                      initval=scal,
-                      title="mark scale factor (markscale)",
-                      showvalue=TRUE,
-                      pos=pozzie(nextrow))
-    nextrow <- nextrow+1
+    marx <- marks(x)
+    markscale <- mark.scale.default(marx[is.finite(marx)], as.owin(x))
+  }
+  controls <- list(
+    if(mtype == "multitype")
+      shiny::checkboxInput("split", "Split according to marks", FALSE),
+    shiny::radioButtons("pointmap", "How to plot points", choices,
+                        selected=pointmap),
+    shiny::sliderInput("charsize", "Symbol expansion factor (cex)",
+                       min=0, max=5, value=1, step=0.05),
+    if(mtype == "marked")
+      shiny::sliderInput("markscale", "Mark scale factor", min=markscale/10,
+                         max=10*markscale, value=markscale))
+  panel <- list(x=x, w=as.owin(x), xname=xname, mtype=mtype)
+  read.controls <- function(input) {
+    list(split=isTRUE(input$split),
+         pointmap=.sg.value(input$pointmap, pointmap),
+         charsize=.sg.value(input$charsize, 1),
+         markscale=.sg.value(input$markscale, markscale))
+  }
+  .sg.plot.app(panel, controls, read.controls, .sg.draw.ppp,
+               function() summary(x))
   }
 
-# button to print a summary at console
-  rpanel::rp.button(p, title="Print summary information",
-                    pos=pozzie(nextrow),
-                    action=function(panel) { print(summary(panel$x)); panel} )
-#  
-#----- Navigation controls ------------
-  nextrow <- 0
-  navpos <- function(n=nextrow,cc=0, ...)
-    append(list(row=n,column=cc,grid="gnavigate"), list(...))
-
-  rpanel::rp.button(p, title="Up", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        zo <- panel$zoomfactor
-                        ce <- panel$zoomcentre
-                        bb <- panel$bb
-                        height <- sidelengths(bb)[2L]
-                        stepsize <- (height/4)/zo
-                        panel$zoomcentre <- ce + c(0, stepsize)
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Left", pos=navpos(nextrow,0,sticky="w"),
-                    action=function(panel) {
-                        zo <- panel$zoomfactor
-                        ce <- panel$zoomcentre
-                        bb <- panel$bb
-                        width <- sidelengths(bb)[1L]
-                        stepsize <- (width/4)/zo
-                        panel$zoomcentre <- ce - c(stepsize, 0)
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  rpanel::rp.button(p, title="Right", pos=navpos(nextrow,2,sticky="e"),
-                    action=function(panel) {
-                        zo <- panel$zoomfactor
-                        ce <- panel$zoomcentre
-                        bb <- panel$bb
-                        width <- sidelengths(bb)[1L]
-                        stepsize <- (width/4)/zo
-                        panel$zoomcentre <- ce + c(stepsize, 0)
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Down", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        zo <- panel$zoomfactor
-                        ce <- panel$zoomcentre
-                        bb <- panel$bb
-                        height <- sidelengths(bb)[2L]
-                        stepsize <- (height/4)/zo
-                        panel$zoomcentre <- ce - c(0, stepsize)
-                        CommitAndRedraw(panel)
-                        return(panel)
-            })
-  nextrow <- nextrow + 1
-
-  rpanel::rp.button(p, title="Zoom In", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        panel$zoomfactor <- panel$zoomfactor * 2
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Zoom Out", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        panel$zoomfactor <- panel$zoomfactor / 2
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Reset", pos=navpos(nextrow,1,sticky=""),
-                    action=function(panel) {
-                        panel$zoomfactor <- 1
-                        panel$zoomcentre <- panel$bbmid
-                        CommitAndRedraw(panel)
-                        return(panel)
-                    })
-  nextrow <- nextrow + 1
-  rpanel::rp.button(p, title="Redraw", pos=navpos(nextrow,1,sticky=""),
-                    action=redraw.iplot.ppp)
-  nextrow <- nextrow+1
-# quit button 
-  rpanel::rp.button(p, title="Quit", quitbutton=TRUE,
-                    pos=navpos(nextrow, 1, sticky=""),
-                    action= function(panel) { panel })
-
-  invisible(NULL)
-}
-
-
-  # Function to redraw the whole shebang
-  redraw.iplot.ppp <- function(panel) {
-    rpanel::rp.tkrreplot(panel, mytkr)
-    panel
-  }
-
-
-# Function executed when data display is clicked
-
-  click.iplot.ppp <- function(panel, x, y) {
-    if(panel$split) {
-      cat("Mouse interaction is not supported when the point pattern is split\n")
-    } else {
-      panel$zoomcentre <- panel$zoomcentre +
-        (c(x,y) - panel$bbmid)/panel$zoomfactor
-      CommitAndRedraw(panel)
-    }
-    return(panel)
-  }
-
-# function that updates the plot when the control panel is operated
-
-do.iplot.ppp <- function(panel) { 
+.sg.draw.ppp <- function(panel) {
   use.marks <- TRUE
   pch <- 16
   switch(panel$pointmap,
@@ -332,16 +128,3 @@ do.iplot.ppp <- function(panel) {
   }
   panel
 }
-
-CommitAndRedraw <- function(panel) {
-  # hack to ensure that panel is immediately updated in rpanel
-  kraever("rpanel")
-  ## This is really a triple-colon!
-  rpanel:::rp.control.put(panel$panelname, panel)
-  # now redraw it
-  redraw.iplot.ppp(panel)
-}
-
-iplot.ppp
-})
-
